@@ -11,7 +11,15 @@ app.use(
   cors({
     origin(origin, callback) {
       // Allow non-browser tools (no Origin) and configured frontend URLs
-      if (!origin || env.frontendUrls.includes(origin)) {
+      if (!origin) {
+        return callback(null, true);
+      }
+      const normalizedOrigin = origin.replace(/\/+$/, '');
+      const isAllowed = env.frontendUrls.some((allowed) => {
+        const normAllowed = allowed.replace(/\/+$/, '');
+        return normAllowed === '*' || normAllowed === normalizedOrigin;
+      });
+      if (isAllowed) {
         return callback(null, true);
       }
       return callback(new Error(`CORS blocked for origin: ${origin}`));
@@ -22,6 +30,8 @@ app.use(
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Production health check endpoints
+app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 app.get('/api/health', (_req, res) => sendSuccess(res, { status: 'ok' }));
 app.use('/api', routes);
 app.use(errorHandler);

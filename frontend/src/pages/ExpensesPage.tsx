@@ -22,7 +22,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { employeesApi, expensesApi, sitesApi } from '../services/resources';
-import type { Expense, ExpenseCategory, ExpensePaymentMode, ExpenseStatus } from '../types';
+import type { Expense, ExpenseCategory, ExpenseStatus } from '../types';
 import { DataTable } from '../components/DataTable';
 import { ConfirmDialog, Modal } from '../components/Modal';
 import { Pagination } from '../components/Pagination';
@@ -31,7 +31,6 @@ import {
   Alert,
   Badge,
   Button,
-  Card,
   FieldError,
   Input,
   Label,

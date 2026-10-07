@@ -1,32 +1,26 @@
-import { NavLink, useLocation, Outlet } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import {
   Bell,
   Building2,
-  Calendar,
   CalendarCheck,
-  ChevronRight,
-  ClipboardList,
   FileText,
-  Home,
   LayoutDashboard,
   LogOut,
   MapPin,
   Menu,
   Receipt,
-  ScrollText,
   Search,
   Users,
   Wallet,
   X,
   KeyRound,
   BarChart3,
-  ShieldCheck,
 } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { ROLE_LABELS } from '../utils/helpers';
 import type { Role } from '../types';
-import { Button, cn } from '../components/ui';
+import { cn } from '../components/ui';
 import companyLogo from '../assets/company-logo.png';
 
 const COMPANY_NAME = 'IMMACULATE MASTERS';
@@ -102,39 +96,6 @@ const navItems: NavItem[] = [
   },
 ];
 
-function Breadcrumb() {
-  const location = useLocation();
-  const parts = location.pathname.split('/').filter(Boolean);
-
-  return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
-      <NavLink
-        to="/"
-        className="flex items-center gap-1 text-slate-400 hover:text-teal-700 transition"
-      >
-        <Home size={13} className="shrink-0" />
-        <span className="hidden sm:inline font-medium">Home</span>
-      </NavLink>
-
-      {parts.map((crumb, i) => {
-        const isLast = i === parts.length - 1;
-        const formatted = crumb.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-
-        return (
-          <span key={`${crumb}-${i}`} className="flex items-center gap-1.5">
-            <span className="text-slate-300">/</span>
-            {isLast ? (
-              <span className="font-bold text-slate-800">{formatted}</span>
-            ) : (
-              <span className="font-medium text-slate-400">{formatted}</span>
-            )}
-          </span>
-        );
-      })}
-    </nav>
-  );
-}
-
 export function AppLayout() {
   const { user, logout, hasRole } = useAuth();
   const [open, setOpen] = useState(false);
@@ -142,14 +103,6 @@ export function AppLayout() {
   const filteredItems = useMemo(() => {
     return navItems.filter((item) => hasRole(...item.roles));
   }, [hasRole]);
-
-  const currentDate = useMemo(() => {
-    return new Date().toLocaleDateString('en-IN', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-    });
-  }, []);
 
   const sidebar = (
     <aside className="relative flex h-full w-60 sm:w-64 flex-col bg-[#060e24] text-slate-100 border-r border-slate-800/60 select-none overflow-hidden shadow-2xl">

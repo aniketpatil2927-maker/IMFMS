@@ -8,7 +8,7 @@ import {
   type TextareaHTMLAttributes,
 } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, ArrowUpRight, CheckCircle2, Info, Loader2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Info, Loader2 } from 'lucide-react';
 
 export function cn(...inputs: Array<string | false | null | undefined>) {
   return clsx(inputs);

@@ -12,7 +12,6 @@ import {
   Building,
   Building2,
   Calendar,
-  CheckCircle2,
   CreditCard,
   FileText,
   Hash,

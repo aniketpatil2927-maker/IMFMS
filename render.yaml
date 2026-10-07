@@ -1,14 +1,13 @@
-# Prefer placing this at repo root if Root Directory is not set to `backend`.
-# See also backend/render.yaml when Root Directory = backend.
-
 services:
   - type: web
     name: hkbams-api
     runtime: node
+    # IMPORTANT: must be backend so npm install/build run in the API folder
     rootDir: backend
     plan: free
     buildCommand: npm ci && npm run build
-    startCommand: node dist/server.js
+    # Uses scripts/start.mjs — builds dist if missing, else starts node dist/server.js
+    startCommand: npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
