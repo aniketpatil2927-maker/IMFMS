@@ -5,7 +5,7 @@ services:
     # IMPORTANT: must be backend so npm install/build run in the API folder
     rootDir: backend
     plan: free
-    buildCommand: npm ci && npm run build
+    buildCommand: npm install && npm run build
     # Uses scripts/start.mjs — builds dist if missing, else starts node dist/server.js
     startCommand: npm start
     healthCheckPath: /api/health

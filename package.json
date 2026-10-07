@@ -5,8 +5,9 @@
   "scripts": {
     "dev:backend": "npm run dev --prefix backend",
     "dev:frontend": "npm run dev --prefix frontend",
-    "build": "npm run build --prefix backend && npm run build --prefix frontend",
-    "build:backend": "npm ci --prefix backend && npm run build --prefix backend",
+    "build": "npm install --prefix backend && npm run build --prefix backend",
+    "build:backend": "npm install --prefix backend && npm run build --prefix backend",
+    "start": "node scripts/start-backend.mjs",
     "start:backend": "node scripts/start-backend.mjs",
     "prisma:migrate": "npm run prisma:migrate --prefix backend",
     "prisma:seed": "npm run prisma:seed --prefix backend"
