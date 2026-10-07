@@ -20,7 +20,7 @@ export const env = {
   jwtSecret: process.env.JWT_SECRET ?? 'dev-secret-change-me',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '8h',
   /** Comma-separated list of allowed frontend origins (Vite dev servers, Vercel production domain, etc.). */
-  frontendUrls: (process.env.FRONTEND_URL ?? 'http://localhost:5173,http://localhost:5174')
+  frontendUrls: (process.env.FRONTEND_URL ?? 'http://localhost:5173,http://localhost:5174,https://imfms.vercel.app')
     .split(',')
     .map((u) => u.trim().replace(/\/+$/, ''))
     .filter(Boolean),

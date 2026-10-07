@@ -15,10 +15,13 @@ app.use(
         return callback(null, true);
       }
       const normalizedOrigin = origin.replace(/\/+$/, '');
-      const isAllowed = env.frontendUrls.some((allowed) => {
-        const normAllowed = allowed.replace(/\/+$/, '');
-        return normAllowed === '*' || normAllowed === normalizedOrigin;
-      });
+      const isAllowed =
+        env.frontendUrls.some((allowed) => {
+          const normAllowed = allowed.replace(/\/+$/, '');
+          return normAllowed === '*' || normAllowed === normalizedOrigin;
+        }) ||
+        normalizedOrigin === 'https://imfms.vercel.app' ||
+        normalizedOrigin.endsWith('.vercel.app');
       if (isAllowed) {
         return callback(null, true);
       }
