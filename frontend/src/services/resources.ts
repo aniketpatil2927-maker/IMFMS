@@ -1,5 +1,5 @@
 import api from './api';
-import type { ApiResponse, Bill, Client, DashboardStats, Employee, Invoice, Pagination, Quotation, Site } from '../types';
+import type { ApiResponse, Bill, Client, DashboardStats, Employee, Expense, ExpenseSummary, Invoice, Pagination, Quotation, Site } from '../types';
 
 export const dashboardApi = {
   stats() {
@@ -23,6 +23,12 @@ export const clientsApi = {
   remove(id: string) {
     return api.delete<ApiResponse<{ message: string }>>(`/clients/${id}`);
   },
+  exportExcel(params?: Record<string, unknown>) {
+    return api.get('/clients/export/excel', { params, responseType: 'blob' });
+  },
+  exportPdf(params?: Record<string, unknown>) {
+    return api.get('/clients/export/pdf', { params, responseType: 'blob' });
+  },
 };
 
 export const sitesApi = {
@@ -30,7 +36,7 @@ export const sitesApi = {
     return api.get<ApiResponse<{ items: Site[]; pagination: Pagination }>>('/sites', { params });
   },
   lite(clientId?: string) {
-    return api.get<ApiResponse<Array<{ id: string; name: string; clientId: string }>>>('/sites/lite/list', {
+    return api.get<ApiResponse<Array<{ id: string; name: string; clientId: string; _count?: { employees: number } }>>>('/sites/lite/list', {
       params: { clientId },
     });
   },
@@ -45,6 +51,12 @@ export const sitesApi = {
   },
   remove(id: string) {
     return api.delete<ApiResponse<{ message: string }>>(`/sites/${id}`);
+  },
+  exportExcel(params?: Record<string, unknown>) {
+    return api.get('/sites/export/excel', { params, responseType: 'blob' });
+  },
+  exportPdf(params?: Record<string, unknown>) {
+    return api.get('/sites/export/pdf', { params, responseType: 'blob' });
   },
 };
 
@@ -66,6 +78,12 @@ export const employeesApi = {
   },
   disable(id: string) {
     return api.put<ApiResponse<Employee>>(`/employees/${id}/disable`);
+  },
+  exportExcel(params?: Record<string, unknown>) {
+    return api.get('/employees/export/excel', { params, responseType: 'blob' });
+  },
+  exportPdf(params?: Record<string, unknown>) {
+    return api.get('/employees/export/pdf', { params, responseType: 'blob' });
   },
 };
 
@@ -92,11 +110,61 @@ export const attendanceApi = {
   exportPdf(params: Record<string, unknown>) {
     return api.get('/attendance/export/pdf', { params, responseType: 'blob' });
   },
+  uploadPhoto(data: FormData) {
+    return api.post('/attendance/upload-photo', data, { responseType: 'blob' });
+  },
+  parseBulk(data: FormData) {
+    return api.post<ApiResponse<{
+      siteName: string;
+      siteId?: string;
+      month: number;
+      year: number;
+      daysInMonth: number;
+      employees: Array<{
+        serial?: number;
+        employeeId?: string;
+        employeeCode?: string;
+        name: string;
+        designation: string;
+        days: Record<number, string>;
+        wDays?: number;
+        wo?: number;
+        otLeave?: number;
+        total?: number;
+        note?: string;
+      }>;
+      summary: {
+        hkSupDays: number;
+        hkDays: number;
+        totalDays: number;
+      };
+    }>>('/attendance/parse-bulk', data);
+  },
+  generateRegisterExcel(data: unknown) {
+    return api.post('/attendance/generate-register', data, { responseType: 'blob' });
+  },
+  generateRegisterPdf(data: unknown) {
+    return api.post('/attendance/generate-register-pdf', data, { responseType: 'blob' });
+  },
+  saveBulkRegister(data: unknown) {
+    return api.post<ApiResponse<{ count: number }>>('/attendance/save-bulk', data);
+  },
 };
+
 
 export const quotationsApi = {
   list(params?: Record<string, unknown>) {
     return api.get<ApiResponse<{ items: Quotation[]; pagination: Pagination }>>('/quotations', { params });
+  },
+  summary(params?: Record<string, unknown>) {
+    return api.get<ApiResponse<{
+      totalAmount: number;
+      totalCount: number;
+      raisedAmount: number;
+      raisedCount: number;
+      pendingAmount: number;
+      pendingCount: number;
+    }>>('/quotations/summary', { params });
   },
   get(id: string) {
     return api.get<ApiResponse<Quotation>>(`/quotations/${id}`);
@@ -116,11 +184,27 @@ export const quotationsApi = {
   pdf(id: string) {
     return api.get(`/quotations/${id}/pdf`, { responseType: 'blob' });
   },
+  exportExcel(params?: Record<string, unknown>) {
+    return api.get('/quotations/export/excel', { params, responseType: 'blob' });
+  },
+  exportPdf(params?: Record<string, unknown>) {
+    return api.get('/quotations/export/pdf', { params, responseType: 'blob' });
+  },
 };
 
 export const invoicesApi = {
   list(params?: Record<string, unknown>) {
     return api.get<ApiResponse<{ items: Invoice[]; pagination: Pagination }>>('/invoices', { params });
+  },
+  summary(params?: Record<string, unknown>) {
+    return api.get<ApiResponse<{
+      totalAmount: number;
+      totalCount: number;
+      pendingAmount: number;
+      pendingCount: number;
+      receivedAmount: number;
+      receivedCount: number;
+    }>>('/invoices/summary', { params });
   },
   get(id: string) {
     return api.get<ApiResponse<Invoice>>(`/invoices/${id}`);
@@ -137,6 +221,15 @@ export const invoicesApi = {
   pdf(id: string) {
     return api.get(`/invoices/${id}/pdf`, { responseType: 'blob' });
   },
+  excel(id: string) {
+    return api.get(`/invoices/${id}/excel`, { responseType: 'blob' });
+  },
+  exportExcel(params?: Record<string, unknown>) {
+    return api.get('/invoices/export/excel', { params, responseType: 'blob' });
+  },
+  exportPdf(params?: Record<string, unknown>) {
+    return api.get('/invoices/export/pdf', { params, responseType: 'blob' });
+  },
 };
 
 export const billsApi = {
@@ -151,6 +244,33 @@ export const billsApi = {
   },
   pdf(id: string) {
     return api.get(`/bills/${id}/pdf`, { responseType: 'blob' });
+  },
+};
+
+export const expensesApi = {
+  list(params?: Record<string, unknown>) {
+    return api.get<ApiResponse<{ items: Expense[]; pagination: Pagination }>>('/expenses', { params });
+  },
+  summary(params?: Record<string, unknown>) {
+    return api.get<ApiResponse<ExpenseSummary>>('/expenses/summary', { params });
+  },
+  get(id: string) {
+    return api.get<ApiResponse<Expense>>(`/expenses/${id}`);
+  },
+  create(data: unknown) {
+    return api.post<ApiResponse<Expense>>('/expenses', data);
+  },
+  update(id: string, data: unknown) {
+    return api.put<ApiResponse<Expense>>(`/expenses/${id}`, data);
+  },
+  remove(id: string) {
+    return api.delete<ApiResponse<{ message: string }>>(`/expenses/${id}`);
+  },
+  exportExcel(params?: Record<string, unknown>) {
+    return api.get('/expenses/export/excel', { params, responseType: 'blob' });
+  },
+  exportPdf(params?: Record<string, unknown>) {
+    return api.get('/expenses/export/pdf', { params, responseType: 'blob' });
   },
 };
 

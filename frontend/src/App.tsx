@@ -12,7 +12,7 @@ import { EmployeesPage } from './pages/EmployeesPage';
 import { AttendancePage } from './pages/AttendancePage';
 import { QuotationsPage } from './pages/QuotationsPage';
 import { InvoicesPage } from './pages/InvoicesPage';
-import { BillsPage } from './pages/BillsPage';
+import { ExpensesPage } from './pages/ExpensesPage';
 import { ReportsPage } from './pages/ReportsPage';
 
 const queryClient = new QueryClient({
@@ -46,7 +46,8 @@ export default function App() {
                 <Route element={<ProtectedRoute roles={['SUPER_ADMIN', 'ADMIN', 'OFFICE_STAFF']} />}>
                   <Route path="quotations" element={<QuotationsPage />} />
                   <Route path="invoices" element={<InvoicesPage />} />
-                  <Route path="bills" element={<BillsPage />} />
+                  <Route path="expenses" element={<ExpensesPage />} />
+                  <Route path="bills" element={<Navigate to="/expenses" replace />} />
                 </Route>
                 <Route
                   element={

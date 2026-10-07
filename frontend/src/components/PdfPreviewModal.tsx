@@ -36,39 +36,41 @@ export function PdfPreviewModal({
 
   return createPortal(
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-6">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} aria-hidden />
+      <div className="absolute inset-0 bg-slate-950/50 backdrop-blur-xs" onClick={onClose} aria-hidden />
 
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
         className={cn(
-          'relative z-10 flex w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl',
+          'relative z-10 flex w-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xl',
           'h-[min(92vh,920px)] max-w-5xl',
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-5">
+        <div className="h-1 w-full bg-gradient-to-r from-teal-500 via-emerald-500 to-cyan-500 shrink-0" />
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200/80 bg-gradient-to-r from-slate-50/70 via-white to-slate-50/40 px-4 py-3 sm:px-5">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">Preview</p>
-            <h2 className="truncate text-base font-bold text-slate-900 sm:text-lg">{title}</h2>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-teal-700">Preview</p>
+            <h2 className="truncate text-sm sm:text-base font-bold text-slate-900">{title}</h2>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5">
             {onDownload ? (
-              <Button variant="secondary" type="button" onClick={onDownload} className="gap-1.5">
-                <Download size={16} />
+              <Button size="sm" variant="secondary" type="button" onClick={onDownload} className="gap-1.5">
+                <Download size={14} />
                 <span className="hidden sm:inline">Download</span>
               </Button>
             ) : null}
             <Button
+              size="sm"
               variant="secondary"
               type="button"
-              size="icon"
+              className="h-7.5 w-7.5 p-0"
               onClick={onClose}
               aria-label="Close preview"
               title="Close"
             >
-              <X size={18} strokeWidth={2} />
+              <X size={15} strokeWidth={2} />
             </Button>
           </div>
         </div>

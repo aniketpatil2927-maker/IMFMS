@@ -7,16 +7,22 @@ import {
   type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowRightLeft, Ban, Copy, Download, Eye, Pencil, Trash2 } from 'lucide-react';
+import { ArrowRightLeft, Ban, Copy, Download, Eye, FileSpreadsheet, Pencil, Trash2 } from 'lucide-react';
 import { cn } from './ui';
 
-type Tone = 'default' | 'danger' | 'brand';
+type Tone = 'default' | 'danger' | 'brand' | 'warning' | 'info';
 
 const toneClass: Record<Tone, string> = {
   default:
-    'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900',
-  brand: 'border-teal-200 bg-teal-50 text-teal-700 hover:border-teal-300 hover:bg-teal-100',
-  danger: 'border-rose-200 bg-rose-50 text-rose-600 hover:border-rose-300 hover:bg-rose-100',
+    'border-slate-200/90 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 hover:shadow-xs',
+  brand:
+    'border-teal-200/90 bg-teal-50/80 text-teal-700 hover:border-teal-300 hover:bg-teal-100 hover:text-teal-800 hover:shadow-xs',
+  danger:
+    'border-rose-200/90 bg-rose-50/80 text-rose-600 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-700 hover:shadow-xs',
+  warning:
+    'border-amber-200/90 bg-amber-50/80 text-amber-700 hover:border-amber-300 hover:bg-amber-100 hover:text-amber-800 hover:shadow-xs',
+  info:
+    'border-sky-200/90 bg-sky-50/80 text-sky-700 hover:border-sky-300 hover:bg-sky-100 hover:text-sky-800 hover:shadow-xs',
 };
 
 function PortalTooltip({
@@ -36,7 +42,7 @@ function PortalTooltip({
   return createPortal(
     <div
       role="tooltip"
-      className="pointer-events-none fixed z-[200] -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1.5 text-[11px] font-medium text-white shadow-lg"
+      className="pointer-events-none fixed z-[200] -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white shadow-lg animate-in fade-in duration-100"
       style={{ top, left }}
     >
       {label}
@@ -96,8 +102,8 @@ export function ActionIconButton({
         aria-label={label}
         aria-describedby={open ? tipId : undefined}
         className={cn(
-          'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border shadow-sm transition',
-          'disabled:cursor-not-allowed disabled:opacity-50',
+          'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border shadow-2xs transition-all duration-150 cursor-pointer',
+          'active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none',
           toneClass[tone],
           className,
         )}
@@ -137,8 +143,8 @@ export function EditActionButton({
   disabled?: boolean;
 }) {
   return (
-    <ActionIconButton label="Edit" onClick={onClick} disabled={disabled}>
-      <Pencil size={15} strokeWidth={2} />
+    <ActionIconButton label="Edit" tone="default" onClick={onClick} disabled={disabled}>
+      <Pencil size={14} strokeWidth={2} />
     </ActionIconButton>
   );
 }
@@ -151,8 +157,8 @@ export function DuplicateActionButton({
   disabled?: boolean;
 }) {
   return (
-    <ActionIconButton label="Duplicate" onClick={onClick} disabled={disabled}>
-      <Copy size={15} strokeWidth={2} />
+    <ActionIconButton label="Duplicate" tone="default" onClick={onClick} disabled={disabled}>
+      <Copy size={14} strokeWidth={2} />
     </ActionIconButton>
   );
 }
@@ -166,7 +172,7 @@ export function ViewPdfButton({
 }) {
   return (
     <ActionIconButton label="View PDF" tone="brand" onClick={onClick} disabled={disabled}>
-      <Eye size={15} strokeWidth={2} />
+      <Eye size={14} strokeWidth={2} />
     </ActionIconButton>
   );
 }
@@ -179,8 +185,22 @@ export function DownloadPdfButton({
   disabled?: boolean;
 }) {
   return (
-    <ActionIconButton label="Download PDF" onClick={onClick} disabled={disabled}>
-      <Download size={15} strokeWidth={2} />
+    <ActionIconButton label="Download PDF" tone="default" onClick={onClick} disabled={disabled}>
+      <Download size={14} strokeWidth={2} />
+    </ActionIconButton>
+  );
+}
+
+export function DownloadExcelButton({
+  onClick,
+  disabled,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <ActionIconButton label="Download Excel" tone="default" onClick={onClick} disabled={disabled}>
+      <FileSpreadsheet size={14} strokeWidth={2} />
     </ActionIconButton>
   );
 }
@@ -194,7 +214,7 @@ export function DeleteActionButton({
 }) {
   return (
     <ActionIconButton label="Delete" tone="danger" onClick={onClick} disabled={disabled}>
-      <Trash2 size={15} strokeWidth={2} />
+      <Trash2 size={14} strokeWidth={2} />
     </ActionIconButton>
   );
 }
@@ -207,8 +227,8 @@ export function TransferActionButton({
   disabled?: boolean;
 }) {
   return (
-    <ActionIconButton label="Transfer" onClick={onClick} disabled={disabled}>
-      <ArrowRightLeft size={15} strokeWidth={2} />
+    <ActionIconButton label="Transfer" tone="warning" onClick={onClick} disabled={disabled}>
+      <ArrowRightLeft size={14} strokeWidth={2} />
     </ActionIconButton>
   );
 }
@@ -222,7 +242,7 @@ export function DisableActionButton({
 }) {
   return (
     <ActionIconButton label="Disable" tone="danger" onClick={onClick} disabled={disabled}>
-      <Ban size={15} strokeWidth={2} />
+      <Ban size={14} strokeWidth={2} />
     </ActionIconButton>
   );
 }

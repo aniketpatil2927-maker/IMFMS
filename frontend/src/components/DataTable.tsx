@@ -20,31 +20,33 @@ export function DataTable<T extends { id: string }>({
   if (!rows.length) return <EmptyState message={emptyMessage} />;
 
   return (
-    <div className="rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgb(15_23_42_/_0.04),0_8px_24px_rgb(15_23_42_/_0.05)]">
+    <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-2xs">
       <div className="overflow-x-auto overflow-y-visible">
-        <table className="min-w-full text-left text-sm">
+        <table className="min-w-full border-collapse text-left text-xs">
           <thead>
-            <tr className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-50/40">
+            <tr className="border-b border-slate-200/80 bg-slate-50/80">
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className="whitespace-nowrap px-4 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500"
+                  className="whitespace-nowrap px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-500"
                 >
                   {col.header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-100">
             {rows.map((row, idx) => (
               <tr
                 key={row.id}
-                className={`border-t border-slate-100 transition hover:bg-brand-50/40 ${idx % 2 === 1 ? 'bg-slate-50/40' : 'bg-white'}`}
+                className={`group transition-colors duration-100 hover:bg-teal-50/30 ${
+                  idx % 2 === 1 ? 'bg-slate-50/25' : 'bg-white'
+                }`}
               >
                 {columns.map((col) => (
                   <td
                     key={col.key}
-                    className={`px-4 py-3.5 align-middle text-slate-700 ${col.className ?? ''}`}
+                    className={`px-3 py-2 align-middle text-slate-700 ${col.className ?? ''}`}
                   >
                     {col.render(row)}
                   </td>

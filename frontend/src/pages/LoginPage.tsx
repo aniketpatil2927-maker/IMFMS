@@ -3,7 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, Phone, Sparkles } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { authApi } from '../services/auth';
 import { Alert, Button, FieldError, Input, Label } from '../components/ui';
@@ -18,15 +18,15 @@ const SUPPORT_PHONE = '9356418873';
 const SPLASH_MS = 2500;
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.string().email('Please enter a valid email address'),
   password: z.string().min(1, 'Password is required'),
 });
 
 const forgotSchema = z
   .object({
-    email: z.string().email(),
-    newPassword: z.string().min(8, 'At least 8 characters'),
-    confirmPassword: z.string().min(8),
+    email: z.string().email('Please enter a valid email address'),
+    newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+    confirmPassword: z.string().min(8, 'Please confirm your password'),
   })
   .refine((v) => v.newPassword === v.confirmPassword, {
     message: 'Passwords do not match',
@@ -57,26 +57,29 @@ function PasswordField({
 
   return (
     <div>
-      <Label htmlFor={id} className="text-slate-300">
+      <Label htmlFor={id} className="text-slate-300 text-xs font-semibold uppercase tracking-wider">
         {label}
       </Label>
       <div className="relative">
+        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+          <Lock size={16} />
+        </div>
         <Input
           id={id}
           type={visible ? 'text' : 'password'}
           autoComplete={autoComplete}
           placeholder={placeholder}
-          className={`${className ?? ''} pr-11`}
+          className={`${className ?? ''} pl-10 pr-11`}
           {...registration}
         />
         <button
           type="button"
-          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-500 transition hover:text-teal-700"
+          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400 transition hover:text-teal-600 cursor-pointer"
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? 'Hide password' : 'Show password'}
           title={visible ? 'Hide password' : 'Show password'}
         >
-          {visible ? <EyeOff size={18} /> : <Eye size={18} />}
+          {visible ? <EyeOff size={16} /> : <Eye size={16} />}
         </button>
       </div>
       <FieldError message={error} />
@@ -135,7 +138,7 @@ export function LoginPage() {
   });
 
   const fieldClass =
-    'login-input !border-slate-200 !bg-white !text-slate-900 !placeholder:text-slate-400 !shadow-none focus:!border-teal-500 focus:!ring-4 focus:!ring-teal-500/20';
+    'login-input !border-slate-300/80 !bg-white !text-slate-900 !placeholder:text-slate-400 !shadow-xs focus:!border-teal-500 focus:!ring-4 focus:!ring-teal-500/20';
 
   const switchToForgot = () => {
     setError('');
@@ -159,55 +162,70 @@ export function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 p-6">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 p-4 sm:p-6">
+      {/* Background ambient lighting */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-teal-500/20 blur-3xl" />
+        <div className="absolute -left-24 top-0 h-96 w-96 rounded-full bg-teal-500/15 blur-3xl" />
         <div className="absolute -bottom-28 -right-20 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl" />
         <div
-          className="absolute inset-0 opacity-[0.06]"
+          className="absolute inset-0 opacity-[0.05]"
           style={{
             backgroundImage:
               'linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)',
-            backgroundSize: '44px 44px',
+            backgroundSize: '40px 40px',
           }}
         />
       </div>
 
       <div className="relative w-full max-w-md">
-        <div className="mb-8 flex flex-col items-center text-center">
-          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-lg shadow-teal-950/40 ring-1 ring-white/20">
+        {/* Brand header */}
+        <div className="mb-7 flex flex-col items-center text-center">
+          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-xl shadow-teal-950/40 ring-1 ring-white/20 transition hover:scale-105">
             <img src={companyLogo} alt="Immaculate Masters logo" className="h-full w-full object-contain" />
           </div>
-          <h1 className="mt-4 text-xl font-extrabold tracking-wide text-white">{COMPANY_NAME}</h1>
-          <p className="mt-1 text-sm font-medium text-teal-300">{COMPANY_TAGLINE}</p>
+          <div className="mt-3.5 flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1 rounded-full bg-teal-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-teal-300 ring-1 ring-teal-400/30">
+              <Sparkles size={11} /> Enterprise Portal
+            </span>
+          </div>
+          <h1 className="mt-2 text-xl font-extrabold tracking-wide text-white">{COMPANY_NAME}</h1>
+          <p className="mt-0.5 text-xs font-semibold uppercase tracking-wider text-teal-300/90">
+            {COMPANY_TAGLINE}
+          </p>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-slate-900/80 p-7 shadow-2xl shadow-black/40 backdrop-blur-md">
+        {/* Card */}
+        <div className="rounded-3xl border border-white/10 bg-slate-900/80 p-6 sm:p-8 shadow-2xl shadow-black/50 backdrop-blur-md">
           <div className="mb-6 text-center">
-            <h2 className="text-2xl font-bold tracking-tight text-white">
+            <h2 className="text-xl font-bold tracking-tight text-white">
               {mode === 'login' ? 'Welcome back' : 'Reset password'}
             </h2>
-            <p className="mt-1.5 text-sm text-slate-400">
+            <p className="mt-1 text-xs text-slate-400">
               {mode === 'login'
-                ? 'Sign in to continue to your workspace'
-                : 'Enter your account email and a new password'}
+                ? 'Sign in with your authorized credentials to access workspace'
+                : 'Enter your verified email and choose a new password'}
             </p>
           </div>
 
           {mode === 'login' ? (
             <form className="space-y-4" onSubmit={onLogin}>
               <div>
-                <Label htmlFor="email" className="text-slate-300">
-                  Email
+                <Label htmlFor="email" className="text-slate-300 text-xs font-semibold uppercase tracking-wider">
+                  Email Address
                 </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="username"
-                  placeholder="you@company.com"
-                  className={fieldClass}
-                  {...loginForm.register('email')}
-                />
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                    <Mail size={16} />
+                  </div>
+                  <Input
+                    id="email"
+                    type="email"
+                    autoComplete="username"
+                    placeholder="name@company.com"
+                    className={`${fieldClass} pl-10`}
+                    {...loginForm.register('email')}
+                  />
+                </div>
                 <FieldError message={loginForm.formState.errors.email?.message} />
               </div>
 
@@ -225,7 +243,7 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={switchToForgot}
-                  className="text-sm font-medium text-teal-300 transition hover:text-teal-200"
+                  className="text-xs font-semibold text-teal-300 transition hover:text-teal-200 cursor-pointer"
                 >
                   Forgot password?
                 </button>
@@ -234,24 +252,35 @@ export function LoginPage() {
               {error ? <Alert tone="error">{error}</Alert> : null}
               {success ? <Alert tone="success">{success}</Alert> : null}
 
-              <Button className="w-full" size="lg" type="submit" disabled={loginForm.formState.isSubmitting}>
-                {loginForm.formState.isSubmitting ? 'Signing in...' : 'Sign in'}
+              <Button
+                className="w-full shadow-lg shadow-teal-950/40"
+                size="lg"
+                type="submit"
+                loading={loginForm.formState.isSubmitting}
+                disabled={loginForm.formState.isSubmitting}
+              >
+                {loginForm.formState.isSubmitting ? 'Signing in...' : 'Sign In to Workspace'}
               </Button>
             </form>
           ) : (
             <form className="space-y-4" onSubmit={onForgot}>
               <div>
-                <Label htmlFor="forgot-email" className="text-slate-300">
-                  Email
+                <Label htmlFor="forgot-email" className="text-slate-300 text-xs font-semibold uppercase tracking-wider">
+                  Email Address
                 </Label>
-                <Input
-                  id="forgot-email"
-                  type="email"
-                  autoComplete="username"
-                  placeholder="you@company.com"
-                  className={fieldClass}
-                  {...forgotForm.register('email')}
-                />
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                    <Mail size={16} />
+                  </div>
+                  <Input
+                    id="forgot-email"
+                    type="email"
+                    autoComplete="username"
+                    placeholder="name@company.com"
+                    className={`${fieldClass} pl-10`}
+                    {...forgotForm.register('email')}
+                  />
+                </div>
                 <FieldError message={forgotForm.formState.errors.email?.message} />
               </div>
 
@@ -277,23 +306,35 @@ export function LoginPage() {
 
               {error ? <Alert tone="error">{error}</Alert> : null}
 
-              <Button className="w-full" size="lg" type="submit" disabled={forgotForm.formState.isSubmitting}>
-                {forgotForm.formState.isSubmitting ? 'Updating...' : 'Update password'}
+              <Button
+                className="w-full"
+                size="lg"
+                type="submit"
+                loading={forgotForm.formState.isSubmitting}
+                disabled={forgotForm.formState.isSubmitting}
+              >
+                {forgotForm.formState.isSubmitting ? 'Updating...' : 'Update Password'}
               </Button>
 
               <button
                 type="button"
                 onClick={switchToLogin}
-                className="w-full text-center text-sm font-medium text-slate-400 transition hover:text-teal-300"
+                className="w-full text-center text-xs font-semibold text-slate-400 transition hover:text-teal-300 cursor-pointer"
               >
-                Back to sign in
+                ← Back to sign in
               </button>
-
-              <p className="text-center text-xs leading-relaxed text-slate-500">
-                Need help? Call {SUPPORT_PHONE} or email {SUPPORT_EMAIL}
-              </p>
             </form>
           )}
+
+          {/* Support Info */}
+          <div className="mt-6 border-t border-white/10 pt-4 text-center">
+            <p className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
+              <Phone size={12} className="text-teal-400" />
+              <span>Help Desk: {SUPPORT_PHONE}</span>
+              <span className="text-slate-600">|</span>
+              <span>{SUPPORT_EMAIL}</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>

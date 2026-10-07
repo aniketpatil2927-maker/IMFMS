@@ -55,6 +55,11 @@ export interface Employee {
   name: string;
   mobile: string;
   aadhaar: string | null;
+  pan?: string | null;
+  bankName?: string | null;
+  accountNumber?: string | null;
+  ifscCode?: string | null;
+  branch?: string | null;
   designation: string;
   salary: string | number;
   joiningDate: string;
@@ -141,3 +146,41 @@ export interface DashboardStats {
   pendingQuotations: number | null;
   pendingInvoices: number | null;
 }
+
+export type ExpenseCategory = 'MATERIAL' | 'UNIFORM' | 'ADVANCE' | 'OTHER';
+export type ExpensePaymentMode = 'CASH' | 'UPI' | 'BANK_TRANSFER' | 'CHEQUE' | 'ONLINE';
+export type ExpenseStatus = 'PAID' | 'PENDING' | 'APPROVED';
+
+export interface Expense {
+  id: string;
+  expenseNumber: string;
+  date: string;
+  category: ExpenseCategory;
+  title: string;
+  amount: number;
+  siteId?: string | null;
+  employeeId?: string | null;
+  paymentMode: ExpensePaymentMode;
+  vendorName?: string | null;
+  referenceNumber?: string | null;
+  status: ExpenseStatus;
+  notes?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  site?: { id: string; name: string } | null;
+  employee?: { id: string; employeeCode: string; name: string } | null;
+}
+
+export interface ExpenseSummary {
+  totalAmount: number;
+  totalCount: number;
+  materialAmount: number;
+  materialCount: number;
+  uniformAmount: number;
+  uniformCount: number;
+  advanceAmount: number;
+  advanceCount: number;
+  otherAmount: number;
+  otherCount: number;
+}
+

@@ -1,21 +1,32 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
+  /* Brand Teal Palette - Clean, Modern, Professional */
   --color-brand-50: #f0fdfa;
   --color-brand-100: #ccfbf1;
   --color-brand-200: #99f6e4;
+  --color-brand-300: #5eead4;
+  --color-brand-400: #2dd4bf;
   --color-brand-500: #14b8a6;
   --color-brand-600: #0d9488;
   --color-brand-700: #0f766e;
   --color-brand-800: #115e59;
   --color-brand-900: #134e4a;
-  --color-ink: #0b1220;
+  --color-brand-950: #042f2e;
+
+  /* Neutrals */
+  --color-ink: #0f172a;
   --color-muted: #64748b;
   --color-surface: #ffffff;
-  --color-canvas: #eef3f7;
-  --shadow-soft: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px rgb(15 23 42 / 0.06);
-  --shadow-lift: 0 10px 30px rgb(15 23 42 / 0.1);
+  --color-canvas: #f8fafc;
+
+  /* Refined Shadows */
+  --shadow-soft: 0 1px 3px 0 rgb(15 23 42 / 0.05), 0 1px 2px -1px rgb(15 23 42 / 0.05);
+  --shadow-card: 0 1px 3px 0 rgb(15 23 42 / 0.04), 0 8px 24px -4px rgb(15 23 42 / 0.06);
+  --shadow-lift: 0 12px 32px -4px rgb(15 23 42 / 0.12);
+  --shadow-modal: 0 25px 50px -12px rgb(15 23 42 / 0.25);
 }
 
 * {
@@ -32,13 +43,14 @@ body {
   margin: 0;
   font-family: var(--font-sans);
   color: var(--color-ink);
-  background-color: var(--color-canvas);
+  background-color: #f8fafc;
   background-image:
-    radial-gradient(ellipse 80% 50% at 0% -10%, rgb(20 184 166 / 0.12), transparent 55%),
-    radial-gradient(ellipse 60% 40% at 100% 0%, rgb(15 118 110 / 0.08), transparent 50%),
-    linear-gradient(180deg, #f5f8fb 0%, #eef3f7 100%);
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgb(13 148 136 / 0.08), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 100% 10%, rgb(15 118 110 / 0.05), transparent 60%),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button,
@@ -48,24 +60,30 @@ textarea {
   font: inherit;
 }
 
+/* Custom Sleek Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 999px;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
+/* Animations */
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -73,8 +91,39 @@ textarea {
   }
 }
 
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 .page-enter {
-  animation: fade-up 0.28s ease-out both;
+  animation: fade-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Glass panel */
+.glass-panel {
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 /* Login form fields — keep typed text readable (incl. browser autofill) */
@@ -125,7 +174,7 @@ textarea {
 }
 
 .splash-logo {
-  animation: splash-logo-pop 0.7s ease-out both;
+  animation: splash-logo-pop 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .splash-fade {
