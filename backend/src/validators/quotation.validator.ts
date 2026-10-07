@@ -21,7 +21,7 @@ export const quotationSchema = z.object({
 export const quotationQuerySchema = z.object({
   search: z.string().optional(),
   clientId: z.string().optional(),
-  status: z.nativeEnum(DocumentStatus).optional(),
+  status: z.string().optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(10),
 });

@@ -9,6 +9,8 @@ const manage = [Role.SUPER_ADMIN, Role.ADMIN] as const;
 const view = [Role.SUPER_ADMIN, Role.ADMIN, Role.SITE_SUPERVISOR] as const;
 
 router.use(authenticate);
+router.get('/export/excel', authorize(...view), employeeController.exportExcel);
+router.get('/export/pdf', authorize(...view), employeeController.exportPdf);
 router.get('/', authorize(...view), employeeController.list);
 router.get('/:id', authorize(...view), employeeController.getById);
 router.post('/', authorize(...manage), validateBody(employeeSchema), employeeController.create);

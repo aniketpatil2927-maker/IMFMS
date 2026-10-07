@@ -1,3 +1,4 @@
+import { prisma } from '../config/database.js';
 import { employeeRepository } from '../repositories/employee.repository.js';
 import { siteRepository } from '../repositories/site.repository.js';
 import { AppError } from '../utils/AppError.js';
@@ -8,10 +9,23 @@ export const employeeService = {
     const site = await siteRepository.findById(data.siteId);
     if (!site) throw new AppError('Site not found', 404);
 
-    const existing = await employeeRepository.findByCode(data.employeeCode);
-    if (existing) throw new AppError('Employee ID already exists', 400);
+    let code = data.employeeCode?.trim();
+    if (!code) {
+      const count = await prisma.employee.count();
+      code = `EMP-${String(count + 1).padStart(3, '0')}`;
+      let existingCode = await employeeRepository.findByCode(code);
+      let suffix = 1;
+      while (existingCode) {
+        code = `EMP-${String(count + 1 + suffix).padStart(3, '0')}`;
+        existingCode = await employeeRepository.findByCode(code);
+        suffix++;
+      }
+    } else {
+      const existing = await employeeRepository.findByCode(code);
+      if (existing) throw new AppError('Employee ID already exists', 400);
+    }
 
-    return employeeRepository.create(data);
+    return employeeRepository.create({ ...data, employeeCode: code });
   },
 
   async update(id: string, data: EmployeeInput) {
@@ -21,12 +35,15 @@ export const employeeService = {
     const site = await siteRepository.findById(data.siteId);
     if (!site) throw new AppError('Site not found', 404);
 
-    const codeOwner = await employeeRepository.findByCode(data.employeeCode);
-    if (codeOwner && codeOwner.id !== id) {
-      throw new AppError('Employee ID already exists', 400);
+    const code = data.employeeCode?.trim() || existing.employeeCode;
+    if (code) {
+      const codeOwner = await employeeRepository.findByCode(code);
+      if (codeOwner && codeOwner.id !== id) {
+        throw new AppError('Employee ID already exists', 400);
+      }
     }
 
-    return employeeRepository.update(id, data);
+    return employeeRepository.update(id, { ...data, employeeCode: code });
   },
 
   async getById(id: string) {

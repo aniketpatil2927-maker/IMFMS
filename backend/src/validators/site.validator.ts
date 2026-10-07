@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
 export const siteSchema = z.object({
-  name: z.string().min(1).max(200),
-  clientId: z.string().min(1),
-  address: z.string().min(1),
-  supervisorName: z.string().min(1).max(150),
-  contactNumber: z.string().min(8).max(20),
+  name: z.string().trim().min(1, 'Site name is required').max(200),
+  clientId: z.string().trim().min(1, 'Client selection is required'),
+  address: z.string().trim().min(1, 'Address is required'),
+  supervisorName: z.string().max(150).optional().default(''),
+  contactNumber: z.string().max(20).optional().default(''),
 });
 
 export const siteQuerySchema = z.object({

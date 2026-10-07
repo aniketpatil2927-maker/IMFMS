@@ -10,6 +10,8 @@ const viewRoles = [Role.SUPER_ADMIN, Role.ADMIN, Role.OFFICE_STAFF, Role.SITE_SU
 
 router.use(authenticate);
 router.get('/lite/list', authorize(...viewRoles), siteController.listLite);
+router.get('/export/excel', authorize(...adminRoles), siteController.exportExcel);
+router.get('/export/pdf', authorize(...adminRoles), siteController.exportPdf);
 router.get('/', authorize(...adminRoles), siteController.list);
 router.get('/:id', authorize(...viewRoles), siteController.getById);
 router.post('/', authorize(...adminRoles), validateBody(siteSchema), siteController.create);

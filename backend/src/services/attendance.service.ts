@@ -10,6 +10,8 @@ function parseDateOnly(value: string): Date {
   return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
 }
 
+import { prisma } from '../config/database.js';
+
 export const attendanceService = {
   async saveDaily(input: DailyAttendanceInput) {
     const site = await siteRepository.findById(input.siteId);
@@ -68,7 +70,135 @@ export const attendanceService = {
     month: number;
     employeeId?: string;
   }) {
-    const records = await attendanceRepository.findMonthly(params);
-    return { year: params.year, month: params.month, records };
+    const year = Math.max(2000, Math.min(2100, Number(params.year) || new Date().getFullYear()));
+    const month = Math.max(1, Math.min(12, Number(params.month) || (new Date().getMonth() + 1)));
+    const daysInMonth = new Date(year, month, 0).getDate();
+
+    const records = await attendanceRepository.findMonthly({ ...params, year, month });
+
+    let site = null;
+    let employeesWithAttendance: Array<{
+      id: string;
+      serial: number;
+      employeeCode: string;
+      name: string;
+      designation: string;
+      days: Record<number, string>;
+      wDays: number;
+      wo: number;
+      otLeave: number;
+      total: number;
+    }> = [];
+
+    let totalHkSupDays = 0;
+    let totalHkDays = 0;
+
+    if (params.siteId) {
+      site = await prisma.site.findUnique({
+        where: { id: params.siteId },
+        include: { client: { select: { id: true, companyName: true } } },
+      });
+
+      const activeEmployees = await employeeRepository.findActiveBySite(params.siteId);
+
+      const recordsByEmp = new Map<string, Map<number, string>>();
+      for (const r of records) {
+        const dayNum = new Date(r.date).getUTCDate();
+        if (!recordsByEmp.has(r.employeeId)) recordsByEmp.set(r.employeeId, new Map());
+        let code = 'P';
+        if (r.status === 'PRESENT') code = 'P';
+        else if (r.status === 'ABSENT') code = 'A';
+        else if (r.status === 'HALF_DAY') code = '1/2';
+        else if (r.status === 'LEAVE') code = 'L';
+        else if (r.status === 'HOLIDAY') code = 'H';
+        recordsByEmp.get(r.employeeId)!.set(dayNum, code);
+      }
+
+      employeesWithAttendance = activeEmployees.map((emp, index) => {
+        const empDaysMap = recordsByEmp.get(emp.id) || new Map();
+        const days: Record<number, string> = {};
+        let pCount = 0;
+        let woCount = 0;
+        let halfDayCount = 0;
+        let otLeaveCount = 0;
+
+        for (let d = 1; d <= daysInMonth; d++) {
+          const isSunday = new Date(year, month - 1, d).getDay() === 0;
+          const savedCode = empDaysMap.get(d);
+          const code = savedCode !== undefined ? savedCode : (isSunday ? 'WO' : '');
+          days[d] = code;
+
+          const upper = (code || '').toUpperCase();
+          if (upper === 'P' || upper === 'PRESENT') pCount++;
+          else if (upper === 'WO' || upper === 'W/O') woCount++;
+          else if (upper === '1/2' || upper === 'HD' || upper === '0.5') halfDayCount++;
+          else if (upper === 'L' || upper === 'P/L' || upper === 'PL' || upper === 'OT' || upper === 'LEAVE') otLeaveCount++;
+        }
+
+        const wDays = pCount + halfDayCount;
+        const wo = woCount;
+        const otLeave = otLeaveCount;
+        const total = pCount + (halfDayCount * 0.5) + wo + otLeave;
+
+        const desigLower = (emp.designation || '').toLowerCase();
+        if (desigLower.includes('sup') || desigLower.includes('supervisor')) {
+          totalHkSupDays += total;
+        } else {
+          totalHkDays += total;
+        }
+
+        return {
+          id: emp.id,
+          serial: index + 1,
+          employeeCode: emp.employeeCode,
+          name: emp.name,
+          designation: emp.designation,
+          days,
+          wDays,
+          wo,
+          otLeave,
+          total,
+        };
+      });
+    }
+
+    const allSites = await prisma.site.findMany({
+      include: {
+        client: { select: { companyName: true } },
+        _count: { select: { employees: { where: { isActive: true } } } },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    return {
+      year,
+      month,
+      daysInMonth,
+      site: site
+        ? {
+            id: site.id,
+            name: site.name,
+            supervisorName: site.supervisorName,
+            contactNumber: site.contactNumber,
+            client: site.client,
+          }
+        : null,
+      sites: allSites.map((s) => ({
+        id: s.id,
+        name: s.name,
+        clientName: s.client?.companyName || '-',
+        supervisorName: s.supervisorName || '-',
+        contactNumber: s.contactNumber || '-',
+        staffCount: s._count.employees,
+      })),
+      employees: employeesWithAttendance,
+      summary: {
+        totalEmployees: employeesWithAttendance.length,
+        hkSupDays: Number(totalHkSupDays.toFixed(2)),
+        hkDays: Number(totalHkDays.toFixed(2)),
+        totalDays: Number((totalHkSupDays + totalHkDays).toFixed(2)),
+      },
+      records,
+    };
   },
 };

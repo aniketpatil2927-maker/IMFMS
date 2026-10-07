@@ -166,7 +166,7 @@ export function buildInvoicePdf(invoice: InvoicePdfData): Promise<Buffer> {
       { key: 'sr', label: 'Sr.\nNo.', w: 28 },
       { key: 'part', label: 'Particulars', w: 150 },
       { key: 'qty', label: 'QTY as\nper W.O.', w: 48 },
-      { key: 'rate', label: 'Rate Per\nDay', w: 58 },
+      { key: 'rate', label: 'Rate Per\nMonth', w: 58 },
       { key: 'md', label: 'Mandays', w: 52 },
       { key: 'amd', label: 'Actual Mandays\n/ OT hours', w: 78 },
       { key: 'amt', label: 'Amount', w: contentW - 28 - 150 - 48 - 58 - 52 - 78 },

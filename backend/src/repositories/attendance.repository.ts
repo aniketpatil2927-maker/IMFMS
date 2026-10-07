@@ -40,8 +40,11 @@ export const attendanceRepository = {
     month: number;
     employeeId?: string;
   }) {
-    const start = new Date(Date.UTC(params.year, params.month - 1, 1));
-    const end = new Date(Date.UTC(params.year, params.month, 0));
+    const year = Math.max(2000, Math.min(2100, Number(params.year) || new Date().getFullYear()));
+    const month = Math.max(1, Math.min(12, Number(params.month) || (new Date().getMonth() + 1)));
+
+    const start = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
+    const end = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
 
     const where: Prisma.AttendanceWhereInput = {
       date: { gte: start, lte: end },

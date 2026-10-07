@@ -8,6 +8,7 @@ import attendanceRoutes from './attendance.routes.js';
 import quotationRoutes from './quotation.routes.js';
 import invoiceRoutes from './invoice.routes.js';
 import billRoutes from './bill.routes.js';
+import expenseRoutes from './expense.routes.js';
 import reportRoutes from './report.routes.js';
 
 const router = Router();
@@ -21,6 +22,7 @@ router.use('/attendance', attendanceRoutes);
 router.use('/quotations', quotationRoutes);
 router.use('/invoices', invoiceRoutes);
 router.use('/bills', billRoutes);
+router.use('/expenses', expenseRoutes);
 router.use('/reports', reportRoutes);
 
 export default router;

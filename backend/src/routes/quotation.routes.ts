@@ -8,6 +8,9 @@ const router = Router();
 const roles = [Role.SUPER_ADMIN, Role.ADMIN, Role.OFFICE_STAFF] as const;
 
 router.use(authenticate, authorize(...roles));
+router.get('/export/excel', quotationController.exportListExcel);
+router.get('/export/pdf', quotationController.exportListPdf);
+router.get('/summary', quotationController.summary);
 router.get('/', quotationController.list);
 router.get('/:id', quotationController.getById);
 router.get('/:id/pdf', quotationController.pdf);

@@ -8,6 +8,8 @@ const router = Router();
 const roles = [Role.SUPER_ADMIN, Role.ADMIN] as const;
 
 router.use(authenticate, authorize(...roles));
+router.get('/export/excel', clientController.exportExcel);
+router.get('/export/pdf', clientController.exportPdf);
 router.get('/', clientController.list);
 router.get('/:id', clientController.getById);
 router.post('/', validateBody(clientSchema), clientController.create);

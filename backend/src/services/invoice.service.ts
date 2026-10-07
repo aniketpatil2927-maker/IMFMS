@@ -17,32 +17,42 @@ async function assertClientSite(clientId: string, siteId: string) {
   }
 }
 
-function lineAmount(item: InvoiceInput['items'][number]) {
-  const qty = item.quantity;
-  const rate = item.rate;
-  const mandays = Number(item.mandays ?? 0);
-  const actual = Number(item.actualMandays ?? 0);
+function lineAmount(item: InvoiceInput['items'][number], lineIndex: number) {
+  const qty = Number(item.quantity ?? 1);
+  const rate = Number(item.rate ?? 0);
+  const mandays = item.mandays != null ? Number(item.mandays) : 0;
+  const actual = item.actualMandays != null ? Number(item.actualMandays) : 0;
 
-  // Fixed amount lines (materials / equipment)
-  if ((qty === 0 || rate === 0) && item.amount != null && item.amount > 0) {
-    return roundMoney(item.amount);
+  // Fixed amount lines (materials / equipment) where qty and rate are 0
+  if ((qty === 0 || rate === 0) && mandays === 0 && item.amount != null && item.amount > 0) {
+    return roundMoney(Number(item.amount));
   }
 
-  // Pro-rata on actual mandays: Qty × Rate × (Actual / Mandays)
-  if (qty > 0 && rate > 0 && mandays > 0 && actual > 0) {
-    return roundMoney(qty * rate * (actual / mandays));
+  // Monthly manpower billing based on actual mandays
+  if (mandays > 0 || actual > 0 || rate > 0) {
+    if (rate <= 0) {
+      throw new AppError(`Line ${lineIndex + 1}: Rate Per Month is required.`, 400);
+    }
+    if (mandays <= 0) {
+      throw new AppError(`Line ${lineIndex + 1}: Total Mandays must be greater than 0.`, 400);
+    }
+    if (actual > mandays) {
+      throw new AppError(`Line ${lineIndex + 1}: Actual Mandays cannot exceed Total Mandays.`, 400);
+    }
+    if (actual === 0) {
+      return 0;
+    }
+    const singleAmount = (rate / mandays) * actual;
+    const totalAmount = qty > 1 ? singleAmount * qty : singleAmount;
+    return roundMoney(totalAmount);
   }
 
-  if (qty > 0 && rate > 0) {
-    return roundMoney(qty * rate);
-  }
-
-  return roundMoney(item.amount ?? 0);
+  return roundMoney(Number(item.amount ?? 0));
 }
 
 function buildTotals(items: InvoiceInput['items'], gstPercent: number) {
-  const lineItems = items.map((item) => {
-    const amount = lineAmount(item);
+  const lineItems = items.map((item, idx) => {
+    const amount = lineAmount(item, idx);
     return {
       serviceDetails: item.serviceDetails,
       quantity: item.quantity,
@@ -141,7 +151,7 @@ export const invoiceService = {
   async list(params: {
     search?: string;
     clientId?: string;
-    status?: DocumentStatus;
+    status?: DocumentStatus | string;
     page: number;
     limit: number;
   }) {
@@ -155,6 +165,10 @@ export const invoiceService = {
         totalPages: Math.ceil(total / params.limit) || 1,
       },
     };
+  },
+
+  async summary(clientId?: string) {
+    return invoiceRepository.getSummary(clientId);
   },
 
   async remove(id: string) {

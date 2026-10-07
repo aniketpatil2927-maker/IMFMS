@@ -86,6 +86,40 @@ export const reportController = {
     }
   },
 
+  async clients(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const items = await prisma.client.findMany({
+        include: { _count: { select: { sites: true } } },
+        orderBy: { companyName: 'asc' },
+      });
+      return sendSuccess(res, { items });
+    } catch (e) {
+      return next(e);
+    }
+  },
+
+  async sites(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const items = await prisma.site.findMany({
+        include: { client: true, _count: { select: { employees: true } } },
+        orderBy: { name: 'asc' },
+      });
+      return sendSuccess(res, { items });
+    } catch (e) {
+      return next(e);
+    }
+  },
+
+  async expenses(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const { expenseRepository } = await import('../repositories/expense.repository.js');
+      const { items } = await expenseRepository.findMany({ page: 1, limit: 1000 });
+      return sendSuccess(res, { items });
+    } catch (e) {
+      return next(e);
+    }
+  },
+
   async export(req: Request, res: Response, next: NextFunction) {
     try {
       const type = String(req.params.type);
@@ -96,6 +130,63 @@ export const reportController = {
         const month = Number(req.query.month) || new Date().getMonth() + 1;
         let siteId = typeof req.query.siteId === 'string' ? req.query.siteId : undefined;
         if (req.user?.role === 'SITE_SUPERVISOR') siteId = req.user.siteId ?? undefined;
+
+        if (siteId) {
+          const { attendanceService } = await import('../services/attendance.service.js');
+          const registerData = (await attendanceService.getMonthly({ siteId, year, month })) as {
+            site?: { name: string } | null;
+            employees: Array<{
+              serial?: number;
+              name: string;
+              designation: string;
+              days: Record<number, string>;
+              wDays?: number;
+              wo?: number;
+              otLeave?: number;
+              total?: number;
+            }>;
+            summary: {
+              hkSupDays: number;
+              hkDays: number;
+              totalDays: number;
+            };
+          };
+
+          const siteName = registerData.site?.name || 'Site';
+          if (formatType === 'pdf') {
+            const { buildExactAttendanceRegisterPdf } = await import('../utils/pdf.js');
+            const buffer = await buildExactAttendanceRegisterPdf({
+              siteName,
+              month,
+              year,
+              employees: registerData.employees,
+              hkSupDays: registerData.summary.hkSupDays,
+              hkDays: registerData.summary.hkDays,
+              totalDays: registerData.summary.totalDays,
+            });
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename="attendance-${siteName.toLowerCase().replace(/\s+/g, '-')}-${month}-${year}.pdf"`);
+            return res.send(buffer);
+          }
+
+          const { buildExactAttendanceRegisterExcel } = await import('../utils/excel.js');
+          const buffer = await buildExactAttendanceRegisterExcel({
+            siteName,
+            month,
+            year,
+            employees: registerData.employees,
+            hkSupDays: registerData.summary.hkSupDays,
+            hkDays: registerData.summary.hkDays,
+            totalDays: registerData.summary.totalDays,
+          });
+          res.setHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          );
+          res.setHeader('Content-Disposition', `attachment; filename="attendance-${siteName.toLowerCase().replace(/\s+/g, '-')}-${month}-${year}.xlsx"`);
+          return res.send(buffer);
+        }
+
         const records = await attendanceRepository.findMonthly({ siteId, year, month });
         if (formatType === 'pdf') {
           const buffer = await buildAttendancePdf({
@@ -207,24 +298,86 @@ export const reportController = {
           employees: b.totalEmployees,
           total: toNumber(b.grandTotal),
         }));
+      } else if (type === 'clients') {
+        const items = await prisma.client.findMany({
+          include: { _count: { select: { sites: true } } },
+        });
+        columns = [
+          { header: 'Client Company', key: 'company', width: 24 },
+          { header: 'Contact Person', key: 'contact', width: 20 },
+          { header: 'Mobile', key: 'mobile', width: 16 },
+          { header: 'Email', key: 'email', width: 22 },
+          { header: 'GST', key: 'gst', width: 18 },
+          { header: 'Sites', key: 'sites', width: 10 },
+        ];
+        rows = items.map((c) => ({
+          company: c.companyName,
+          contact: c.contactPerson || '-',
+          mobile: c.mobile,
+          email: c.email || '-',
+          gst: c.gstNumber || '-',
+          sites: c._count?.sites ?? 0,
+        }));
+      } else if (type === 'sites') {
+        const items = await prisma.site.findMany({
+          include: { client: true, _count: { select: { employees: true } } },
+        });
+        columns = [
+          { header: 'Site Name', key: 'name', width: 24 },
+          { header: 'Client', key: 'client', width: 22 },
+          { header: 'Supervisor', key: 'supervisor', width: 18 },
+          { header: 'Contact', key: 'contact', width: 16 },
+          { header: 'Employees', key: 'employees', width: 12 },
+        ];
+        rows = items.map((s) => ({
+          name: s.name,
+          client: s.client.companyName,
+          supervisor: s.supervisorName || '-',
+          contact: s.contactNumber || '-',
+          employees: s._count?.employees ?? 0,
+        }));
+      } else if (type === 'expenses') {
+        const { expenseRepository } = await import('../repositories/expense.repository.js');
+        const { items } = await expenseRepository.findMany({ page: 1, limit: 10000 });
+        columns = [
+          { header: 'Voucher', key: 'number', width: 14 },
+          { header: 'Date', key: 'date', width: 12 },
+          { header: 'Category', key: 'category', width: 14 },
+          { header: 'Particulars', key: 'title', width: 28 },
+          { header: 'Site', key: 'site', width: 18 },
+          { header: 'Staff', key: 'staff', width: 16 },
+          { header: 'Vendor', key: 'vendor', width: 16 },
+          { header: 'Mode', key: 'mode', width: 12 },
+          { header: 'Amount', key: 'amount', width: 14 },
+        ];
+        rows = items.map((e) => ({
+          number: e.expenseNumber,
+          date: e.date,
+          category: e.category,
+          title: e.title,
+          site: e.site?.name || '-',
+          staff: e.employee?.name || '-',
+          vendor: e.vendorName || '-',
+          mode: e.paymentMode,
+          amount: e.amount,
+        }));
       } else {
         throw new AppError('Unknown report type', 400);
       }
 
       if (formatType === 'pdf') {
-        const { default: PDFDocument } = await import('pdfkit');
-        const buffer = await new Promise<Buffer>((resolve, reject) => {
-          const doc = new PDFDocument({ margin: 40, size: 'A4', layout: 'landscape' });
-          const chunks: Buffer[] = [];
-          doc.on('data', (c) => chunks.push(c));
-          doc.on('end', () => resolve(Buffer.concat(chunks)));
-          doc.on('error', reject);
-          doc.fontSize(14).text(`${type.toUpperCase()} REPORT`, { align: 'center' }).moveDown();
-          doc.fontSize(9);
-          for (const row of rows.slice(0, 200)) {
-            doc.text(Object.values(row).join(' | '));
-          }
-          doc.end();
+        const { buildGenericPdfTable } = await import('../utils/pdf.js');
+        const totalW = columns.reduce((acc, c) => acc + (c.width || 15), 0);
+        const pdfCols = columns.map((c) => ({
+          header: c.header,
+          key: c.key,
+          width: Math.round(((c.width || 15) / totalW) * 780),
+        }));
+        const buffer = await buildGenericPdfTable({
+          title: `${type.toUpperCase()} REPORT`,
+          subtitle: `Total Records: ${rows.length}`,
+          columns: pdfCols,
+          rows,
         });
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}.pdf"`);

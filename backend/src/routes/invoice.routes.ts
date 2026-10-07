@@ -8,9 +8,13 @@ const router = Router();
 const roles = [Role.SUPER_ADMIN, Role.ADMIN, Role.OFFICE_STAFF] as const;
 
 router.use(authenticate, authorize(...roles));
+router.get('/export/excel', invoiceController.exportListExcel);
+router.get('/export/pdf', invoiceController.exportListPdf);
+router.get('/summary', invoiceController.summary);
 router.get('/', invoiceController.list);
 router.get('/:id', invoiceController.getById);
 router.get('/:id/pdf', invoiceController.pdf);
+router.get('/:id/excel', invoiceController.singleExcel);
 router.post('/', validateBody(invoiceSchema), invoiceController.create);
 router.put('/:id', validateBody(invoiceSchema), invoiceController.update);
 router.delete('/:id', invoiceController.remove);

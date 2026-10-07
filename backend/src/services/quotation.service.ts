@@ -114,7 +114,7 @@ export const quotationService = {
   async list(params: {
     search?: string;
     clientId?: string;
-    status?: DocumentStatus;
+    status?: DocumentStatus | string;
     page: number;
     limit: number;
   }) {
@@ -128,6 +128,10 @@ export const quotationService = {
         totalPages: Math.ceil(total / params.limit) || 1,
       },
     };
+  },
+
+  async summary(clientId?: string) {
+    return quotationRepository.getSummary(clientId);
   },
 
   async duplicate(id: string) {

@@ -75,7 +75,12 @@ export const siteRepository = {
   findAllLite(clientId?: string) {
     return prisma.site.findMany({
       where: clientId ? { clientId } : undefined,
-      select: { id: true, name: true, clientId: true },
+      select: {
+        id: true,
+        name: true,
+        clientId: true,
+        _count: { select: { employees: true } },
+      },
       orderBy: { name: 'asc' },
     });
   },

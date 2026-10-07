@@ -13,6 +13,9 @@ router.get('/employees', authorize(...officeRoles), reportController.employees);
 router.get('/quotations', authorize(...officeRoles), reportController.quotations);
 router.get('/invoices', authorize(...officeRoles), reportController.invoices);
 router.get('/bills', authorize(...officeRoles), reportController.bills);
+router.get('/clients', authorize(...officeRoles), reportController.clients);
+router.get('/sites', authorize(...officeRoles), reportController.sites);
+router.get('/expenses', authorize(...officeRoles), reportController.expenses);
 router.get('/:type/export', authorize(...allReportRoles), reportController.export);
 
 export default router;

@@ -24,13 +24,24 @@ export const invoiceRepository = {
   async findMany(params: {
     search?: string;
     clientId?: string;
-    status?: DocumentStatus;
+    status?: DocumentStatus | string;
     page: number;
     limit: number;
   }) {
+    let statusFilter: Prisma.InvoiceWhereInput['status'] | undefined;
+    if (params.status) {
+      if (params.status === 'PENDING') {
+        statusFilter = { in: ['PENDING', 'DRAFT'] };
+      } else if (params.status === 'FINALIZED') {
+        statusFilter = 'FINALIZED';
+      } else if (params.status === 'DRAFT') {
+        statusFilter = 'DRAFT';
+      }
+    }
+
     const where: Prisma.InvoiceWhereInput = {
       ...(params.clientId ? { clientId: params.clientId } : {}),
-      ...(params.status ? { status: params.status } : {}),
+      ...(statusFilter ? { status: statusFilter } : {}),
       ...(params.search
         ? {
             OR: [
@@ -66,5 +77,47 @@ export const invoiceRepository = {
     return prisma.invoice.count({
       where: { status: { in: ['DRAFT', 'PENDING'] } },
     });
+  },
+
+  async getSummary(clientId?: string) {
+    const where: Prisma.InvoiceWhereInput = clientId ? { clientId } : {};
+    const invoices = await prisma.invoice.findMany({
+      where,
+      select: {
+        id: true,
+        total: true,
+        status: true,
+      },
+    });
+
+    let totalAmount = 0;
+    let totalCount = 0;
+    let pendingAmount = 0;
+    let pendingCount = 0;
+    let receivedAmount = 0;
+    let receivedCount = 0;
+
+    for (const inv of invoices) {
+      const amt = Number(inv.total) || 0;
+      totalAmount += amt;
+      totalCount += 1;
+
+      if (inv.status === 'FINALIZED') {
+        receivedAmount += amt;
+        receivedCount += 1;
+      } else {
+        pendingAmount += amt;
+        pendingCount += 1;
+      }
+    }
+
+    return {
+      totalAmount: Math.round(totalAmount * 100) / 100,
+      totalCount,
+      pendingAmount: Math.round(pendingAmount * 100) / 100,
+      pendingCount,
+      receivedAmount: Math.round(receivedAmount * 100) / 100,
+      receivedCount,
+    };
   },
 };

@@ -1,12 +1,17 @@
 import { z } from 'zod';
 
 export const clientSchema = z.object({
-  companyName: z.string().min(1, 'Company name is required').max(200),
-  contactPerson: z.string().min(1, 'Contact person is required').max(150),
-  mobile: z.string().min(8).max(20),
-  email: z.string().email().optional().or(z.literal('')),
+  companyName: z.string().trim().min(1, 'Client Name is required').max(200),
+  contactPerson: z.string().max(150).optional().default(''),
+  mobile: z
+    .string()
+    .trim()
+    .min(1, 'Mobile Number is required')
+    .regex(/^[0-9+\s-]{10,15}$/, 'Please enter a valid mobile number')
+    .max(20),
+  email: z.string().email('Please enter a valid email address').optional().or(z.literal('')),
   gstNumber: z.string().max(20).optional().or(z.literal('')),
-  address: z.string().min(1, 'Address is required'),
+  address: z.string().trim().min(1, 'Address is required'),
 });
 
 export const clientQuerySchema = z.object({
